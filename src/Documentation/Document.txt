@@ -1,0 +1,1014 @@
+# Spring Boot File Manager Project Documentation
+
+## Table of Contents
+1. Project Overview
+2. Project Structure
+3. Dependencies and Configuration
+4. Core Components
+5. AWS S3 Integration
+6. File Operations
+7. Security and Error Handling
+8. Frontend Implementation
+9. Testing and Deployment
+10. Recent Updates and Changes
+
+## Best Practices and Recommendations
+
+1. **Security**
+   - **CRITICAL**: Never commit AWS credentials to version control
+   - **IMPLEMENTED**: Use ProfileCredentialsProvider or environment variables for AWS credentials
+   - **REQUIRED**: Set up AWS credentials using secure methods:
+     - AWS credentials file: `~/.aws/credentials`
+     - Environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
+     - IAM roles for EC2 instances
+   - Implement proper input validation
+   - Use HTTPS for all API endpoints
+   - Implement rate limiting for API endpoints
+   - Sanitize file names and metadata
+
+2. **Performance**
+   - Implement appropriate file size limits (currently 500MB per file)
+   - Use asynchronous operations for large files
+   - Implement caching where appropriate
+   - Optimize image uploads with compression
+   - Use chunked file uploads for large files
+   - Implement client-side file validation to reduce server load
+   - **NEW**: Configure server timeouts for large file uploads
+   - **NEW**: Monitor memory usage during large file processing
+   - **NEW**: Implement file conflict detection to prevent unnecessary uploads
+
+3. **Maintenance**
+   - Regular dependency updates
+   - Proper logging and monitoring
+   - Regular security audits
+   - Implement health check endpoints
+   - Monitor AWS S3 usage and costs
+   - Regular backup of file metadata
+
+## Troubleshooting Guide
+
+1. **AWS Connection Issues**
+   - Verify AWS credentials
+   - Check region configuration
+   - Ensure proper IAM permissions
+   - Check network connectivity
+   - Verify bucket policies
+   - Monitor AWS CloudWatch logs
+
+2. **File Upload Problems**
+   - Check file size limits (now 500MB per file, 1GB per request)
+   - Verify file type restrictions
+   - Check network connectivity and timeout settings
+   - Monitor upload progress and handle timeouts
+   - Check client-side validation for oversized files
+   - Verify server-side validation and conflict detection
+   - **NEW**: Handle file upload conflicts (duplicate names)
+   - **NEW**: Check server timeout configuration for large files
+   - **NEW**: Verify multipart upload configuration
+
+3. **Application Errors**
+   - Check application logs
+   - Verify database connection
+   - Check AWS S3 bucket configuration
+   - Monitor memory usage
+   - Check disk space
+   - Verify file permissions
+
+4. **UI/UX Issues**
+   - Check browser console for errors
+   - Verify responsive design
+   - Test on different devices
+   - Check accessibility features
+   - Verify notification system
+   - Test file upload progress
+
+## Future Enhancements
+
+1. **Planned Features**
+   - User authentication and authorization
+   - File sharing capabilities
+   - Advanced file search
+   - File versioning
+   - File preview functionality
+   - Batch operations support
+   - Custom file metadata
+   - File encryption
+
+2. **Performance Improvements**
+   - Implement caching
+   - Add compression
+   - Optimize database queries
+   - Implement CDN integration
+   - Add WebSocket support
+   - Implement progressive loading
+   - Add offline support
+   - Optimize image processing
+
+3. **UI/UX Improvements**
+   - Dark/Light theme toggle
+   - Custom file icons
+   - Drag and drop folder upload
+   - File preview modal
+   - Advanced sorting options
+   - Custom view layouts
+   - Keyboard shortcuts
+   - Mobile app version
+
+## 10. Recent Updates and Changes
+
+### 10.1 Enhanced File Upload Configuration (Latest Update)
+
+#### File Size Limits Increased
+- **Previous**: 10MB per file, 10MB per request
+- **Current**: 500MB per file, 1GB per request
+- **Reason**: To support larger file uploads and improve user experience for handling multimedia files, documents, and other large assets
+
+#### Server Configuration Enhancements
+```properties
+# Server timeout configuration for large file uploads
+server.tomcat.connection-timeout=300000
+server.tomcat.max-swallow-size=1GB
+```
+- **Added**: Extended connection timeout (5 minutes) for large file uploads
+- **Added**: Increased max swallow size to handle large requests
+- **Reason**: Prevents timeout errors during large file uploads and improves reliability
+
+### 10.2 File Upload Conflict Handling (Major Feature)
+
+#### Conflict Detection System
+- **New Feature**: Automatic detection of files with identical original names
+- **Implementation**: Server-side validation before upload completion
+- **User Options**: Three-choice conflict resolution system
+
+#### Conflict Resolution Options
+1. **Cancel Upload**: User can abort the upload process
+2. **Replace Existing**: Overwrites the existing file while preserving the same S3 key
+3. **Keep Both Files**: Uploads with a unique generated filename
+
+#### Technical Implementation
+```java
+// Check if file with same original name already exists
+String existingKey = s3Service.findExistingFileByOriginalName(originalFilename);
+
+if (existingKey != null) {
+    // Return HTTP 409 Conflict with resolution options
+    return ResponseEntity.status(409).body(conflictResponse);
+}
+```
+
+### 10.3 Enhanced File Metadata Management
+
+#### Original Filename Preservation
+- **Enhancement**: All uploaded files now store original filename in S3 metadata
+- **Implementation**: `metadata(Collections.singletonMap("original-filename", originalFilename))`
+- **Benefit**: Enables proper file identification and conflict detection
+
+#### Improved File Listing
+- **Enhancement**: File listing now displays original filenames instead of S3 keys
+- **Fallback**: Graceful handling when metadata is not available
+- **User Experience**: More intuitive file management interface
+
+### 10.4 Frontend Improvements
+
+#### File Size Validation
+- **Updated**: Client-side validation now checks for 500MB limit
+- **Implementation**: JavaScript validation before upload initiation
+- **User Feedback**: Clear error messages for oversized files
+
+#### Enhanced Upload Experience
+```javascript
+// Validate file sizes (500MB limit)
+const maxFileSize = 500 * 1024 * 1024; // 500MB in bytes
+const oversizedFiles = [];
+
+for (let file of files) {
+    if (file.size > maxFileSize) {
+        oversizedFiles.push(file.name);
+    }
+}
+```
+
+#### Conflict Resolution UI
+- **New Feature**: Modal dialogs for handling file conflicts
+- **User Experience**: Clear options and explanations for conflict resolution
+- **Error Handling**: Improved feedback for upload failures and conflicts
+
+### 10.5 Security and Performance Improvements
+
+#### Enhanced Logging
+- **Added**: Comprehensive logging for AWS SDK operations
+- **Added**: Debug-level logging for troubleshooting
+- **Configuration**: Structured logging pattern for better monitoring
+
+#### Error Handling Enhancements
+- **Improved**: More specific error messages for different failure scenarios
+- **Added**: Network error detection and user-friendly messages
+- **Enhanced**: Timeout handling for large file uploads
+
+### 10.6 Application Structure Simplification
+
+#### Main Application Class
+- **Simplified**: Removed explicit `@ComponentScan` annotation
+- **Reason**: Spring Boot automatically scans the main class package and sub-packages
+- **Benefit**: Cleaner code and reduced configuration complexity
+
+#### Service Layer Enhancements
+- **Added**: `findExistingFileByOriginalName()` method for conflict detection
+- **Added**: `replaceExistingFile()` method for file replacement
+- **Enhanced**: Better error handling and logging throughout service methods
+
+### 10.7 Security Enhancement - AWS Credentials Removal
+
+#### Critical Security Update
+- **REMOVED**: All hardcoded AWS access keys and secret keys from the entire codebase
+- **REPLACED**: Hardcoded credentials with secure ProfileCredentialsProvider
+- **ENHANCED**: Now uses AWS SDK's default credential provider chain
+- **SECURED**: Documentation examples updated to remove sensitive information
+
+#### Implementation Details
+```java
+// OLD (INSECURE) - Hardcoded credentials
+String accessKeyId = "******************";  // REMOVED FOR SECURITY
+String secretKey = "****************************************";  // REMOVED FOR SECURITY
+AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKeyId, secretKey);
+
+// NEW (SECURE) - ProfileCredentialsProvider
+ProfileCredentialsProvider credentialsProvider = ProfileCredentialsProvider.create("default");
+```
+
+#### Credential Provider Chain
+The application now uses AWS SDK's default credential provider chain in the following order:
+1. **Environment Variables**: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+2. **Java System Properties**: `aws.accessKeyId` and `aws.secretAccessKey`
+3. **AWS Credentials File**: `~/.aws/credentials` (or `C:\Users\USERNAME\.aws\credentials` on Windows)
+4. **IAM Instance Profile**: For EC2 instances with attached IAM roles
+
+#### Security Benefits
+- **No Credential Exposure**: Credentials are never stored in source code
+- **Version Control Safe**: No risk of accidentally committing sensitive data
+- **Environment Specific**: Different credentials can be used for different environments
+- **Rotation Friendly**: Credentials can be rotated without code changes
+- **Audit Trail**: Better tracking of credential usage through AWS CloudTrail
+
+### 10.8 Configuration Management
+
+#### Application Properties Restructuring
+- **Enhanced**: Detailed comments explaining each configuration
+- **Added**: Thymeleaf configuration for template processing
+- **Added**: Logging configuration for better debugging
+- **Organized**: Grouped related configurations together
+
+#### AWS Configuration
+- **Updated**: Bucket name changed to `storage-fm`
+- **Enhanced**: Better region configuration using `spring.cloud.aws.region.static`
+- **SECURITY UPDATE**: Removed all hardcoded AWS credentials and replaced with secure ProfileCredentialsProvider
+- **Enhanced**: Now uses AWS SDK's default credential provider chain for maximum security
+
+### 10.9 Why These Changes Were Made
+
+#### 1. File Size Increase (10MB → 500MB)
+- **User Demand**: Support for larger multimedia files, presentations, and documents
+- **Modern Requirements**: Current web applications need to handle larger file sizes
+- **Competitive Feature**: Matching industry standards for file upload limits
+
+#### 2. Conflict Handling Implementation
+- **User Experience**: Prevents accidental file overwrites
+- **Data Safety**: Gives users control over file management decisions
+- **Professional Feature**: Essential for any production file management system
+
+#### 3. Metadata Enhancement
+- **File Organization**: Better file identification and management
+- **Search Functionality**: Enables searching by original filename
+- **User Interface**: More intuitive file listing and management
+
+#### 4. Frontend Improvements
+- **User Feedback**: Better error messages and upload progress
+- **Validation**: Client-side validation reduces server load
+- **Modern UI**: Enhanced user experience with better visual feedback
+
+#### 5. Security Enhancements
+- **Monitoring**: Better logging for security auditing
+- **Error Handling**: Prevents information leakage through error messages
+- **Validation**: Multiple layers of file validation
+
+### 10.10 Migration Notes
+
+#### For Existing Deployments
+1. **AWS Credentials Setup**: Configure AWS credentials using one of the secure methods:
+   - Create `~/.aws/credentials` file with your AWS credentials
+   - Set environment variables: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+   - Use IAM roles for EC2 instances
+2. **Configuration Update**: Update `application.properties` with new file size limits
+3. **Server Resources**: Ensure adequate memory and disk space for larger files
+4. **Network Configuration**: Verify network timeouts support large file transfers
+5. **Monitoring**: Update monitoring systems for new file size limits
+
+#### Backward Compatibility
+- **Maintained**: All existing API endpoints remain functional
+- **Enhanced**: Existing files continue to work with new metadata system
+- **Graceful**: Fallback handling for files without original filename metadata
+
+## Conclusion
+This Spring Boot File Manager project provides a robust solution for file management with AWS S3 integration. It follows best practices for security, performance, and maintainability while providing a user-friendly interface for file operations. The modern UI implementation with responsive design ensures a great user experience across all devices. The comprehensive API implementation with proper error handling and logging makes it a reliable solution for file management needs.
+
+The recent updates significantly enhance the application's capabilities, particularly in handling larger files and providing better user experience through conflict resolution. The project is continuously evolving with planned enhancements and improvements to provide better functionality and user experience. Regular updates and maintenance ensure the application stays secure and performs optimally.
+
+## 1. Project Overview
+The Spring Boot File Manager is a web application that provides file management capabilities with AWS S3 integration. It allows users to upload, download, and manage files through a user-friendly interface.
+
+### Key Features
+- File upload and download with large file support (up to 500MB)
+- AWS S3 integration for cloud storage
+- User-friendly web interface with modern design
+- File metadata management with original filename preservation
+- Advanced error handling and comprehensive logging
+- **NEW**: File upload conflict detection and resolution
+- **NEW**: File search functionality
+- **NEW**: Enhanced file size validation and progress tracking
+- **NEW**: Responsive design for all devices
+
+## 2. Project Structure
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── org/
+│   │       └── example/
+│   │           ├── config/         # Configuration classes
+│   │           ├── controller/     # MVC controllers
+│   │           ├── model/          # Data models
+│   │           ├── repository/     # Data repositories
+│   │           └── service/        # Business logic
+│   └── resources/
+│       ├── static/                 # Static resources
+│       ├── templates/              # Thymeleaf templates
+│       └── application.properties  # Application configuration
+└── test/                          # Test files
+```
+
+## 3. Dependencies and Configuration
+
+### Key Dependencies
+1. **Spring Boot Starter Web**
+   - Provides web application functionality
+   - Includes embedded Tomcat server
+   - Enables RESTful web services
+
+2. **Spring Boot Starter Thymeleaf**
+   - Template engine for server-side rendering
+   - Enables dynamic HTML generation
+   - Integrates with Spring MVC
+
+3. **AWS SDK for Java**
+   - Enables AWS S3 integration
+   - Provides cloud storage capabilities
+   - Handles file operations in the cloud
+
+4. **Lombok**
+   - Reduces boilerplate code
+   - Provides annotations for getters, setters, and constructors
+   - Improves code readability
+
+### Application Properties
+```properties
+# Application name that will be displayed in logs and management interfaces
+spring.application.name=File Manager
+
+# Maximum size allowed for individual file uploads (500MB)
+# This prevents memory issues and potential DoS attacks from large file uploads
+spring.servlet.multipart.max-file-size=500MB
+
+# Maximum size allowed for the entire HTTP request (1GB)
+# This includes all files and form data in a single request
+# Should be equal to or greater than max-file-size if uploading multiple files
+spring.servlet.multipart.max-request-size=1GB
+
+# Multipart file upload configuration
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.file-size-threshold=2KB
+spring.servlet.multipart.resolve-lazily=false
+
+# Server timeout configuration for large file uploads
+server.tomcat.connection-timeout=300000
+server.tomcat.max-swallow-size=1GB
+
+# AWS Configuration
+spring.cloud.aws.region.static=ap-southeast-1
+aws.bucket.name=storage-fm
+
+# Thymeleaf Configuration
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.mode=HTML
+spring.thymeleaf.encoding=UTF-8
+spring.thymeleaf.cache=false
+
+# Logging Configuration
+logging.level.root=INFO
+logging.level.org.example=DEBUG
+logging.level.software.amazon.awssdk=DEBUG
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+```
+
+## 4. Core Components
+
+### 4.1 Main Application Class (FileManagerApplication.java)
+```java
+@SpringBootApplication
+public class FileManagerApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(FileManagerApplication.class, args);
+    }
+}
+```
+#### Detailed Explanation:
+- `@SpringBootApplication`: This is a convenience annotation that adds all of the following:
+  - `@Configuration`: Tags the class as a source of bean definitions
+  - `@EnableAutoConfiguration`: Tells Spring Boot to start adding beans based on classpath settings
+  - `@ComponentScan`: Tells Spring to look for other components, configurations, and services
+- **Updated**: Removed explicit `@ComponentScan` annotation as Spring Boot automatically scans the package and sub-packages of the main class
+- `main()` method: The entry point of the application that bootstraps the Spring Boot application
+
+### 4.2 GUI Controller (GUIController.java)
+```java
+@Controller
+public class GUIController {
+    @GetMapping("/")
+    public String index() {
+        return "file-manager";
+    }
+
+    @GetMapping("/file-manager")
+    public String fileManager() {
+        return "file-manager";
+    }
+}
+```
+#### Detailed Explanation:
+- `@Controller`: Marks this class as a Spring MVC controller
+- `@GetMapping("/")`: Maps HTTP GET requests to the root URL ("/")
+- `@GetMapping("/file-manager")`: Maps HTTP GET requests to "/file-manager" URL
+- Both methods return "file-manager", which corresponds to the Thymeleaf template name
+
+### 4.3 AWS Configuration (AwsConfig.java)
+```java
+@Configuration
+public class AwsConfig {
+    private static final Logger logger = LoggerFactory.getLogger(AwsConfig.class);
+
+    @Bean
+    public S3Client s3Client() {
+        logger.info("Initializing S3Client with ProfileCredentialsProvider (secure method)");
+
+        // Use ProfileCredentialsProvider for secure credential management
+        // This will look for credentials in ~/.aws/credentials file or environment variables
+        ProfileCredentialsProvider credentialsProvider = ProfileCredentialsProvider.create("default");
+        Region region = Region.AP_SOUTHEAST_1;
+
+        return S3Client.builder()
+                .region(region)
+                .credentialsProvider(credentialsProvider)
+                .serviceConfiguration(S3Configuration.builder()
+                        .pathStyleAccessEnabled(true)
+                        .build())
+                .build();
+    }
+}
+```
+#### Detailed Explanation:
+- `@Configuration`: Indicates that this class contains Spring configuration
+- `@Bean`: Marks the method as a bean producer
+- Logger setup for tracking AWS client initialization
+- **Secure AWS credentials configuration**:
+  - Uses ProfileCredentialsProvider for secure credential management
+  - Automatically looks for credentials in ~/.aws/credentials file
+  - Falls back to environment variables if credentials file not found
+  - Sets the AWS region to AP_SOUTHEAST_1
+  - Configures S3 client with path-style access enabled
+- **Security Enhancement**: All hardcoded credentials have been removed for security
+- **Credential Management**: Uses AWS SDK's default credential provider chain for maximum security
+
+### 4.4 S3 Service (S3Service.java)
+```java
+@Service
+public class S3Service {
+    @Autowired
+    private S3Client s3Client;
+
+    @Value("${aws.bucket.name}")
+    private String bucketName;
+
+    public String uploadFile(MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        String keyName = generateUniqueKeyName(file.getOriginalFilename());
+
+        try {
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(keyName)
+                    .contentType(file.getContentType())
+                    .contentLength(file.getSize())
+                    .build();
+
+            s3Client.putObject(putObjectRequest,
+                    RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+            return keyName;
+        } catch (S3Exception e) {
+            throw new RuntimeException("Failed to upload file to S3: " + e.getMessage(), e);
+        }
+    }
+
+    public String generateDownloadUrl(String keyName) {
+        try {
+            headObject(keyName);  // Verify file exists
+
+            try (S3Presigner presigner = S3Presigner.create()) {
+                GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(keyName)
+                        .build();
+
+                GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                        .signatureDuration(Duration.ofHours(1))  // URL expires in 1 hour
+                        .getObjectRequest(getObjectRequest)
+                        .build();
+
+                PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(presignRequest);
+                return presignedRequest.url().toString();
+            }
+        } catch (NoSuchKeyException e) {
+            throw new RuntimeException("File not found: " + keyName, e);
+        } catch (S3Exception e) {
+            throw new RuntimeException("Failed to generate download URL: " + e.getMessage(), e);
+        }
+    }
+
+    public byte[] downloadFileContent(String keyName) {
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(keyName)
+                    .build();
+
+            return s3Client.getObjectAsBytes(getObjectRequest).asByteArray();
+        } catch (NoSuchKeyException e) {
+            throw new RuntimeException("File not found: " + keyName, e);
+        } catch (S3Exception e) {
+            throw new RuntimeException("Failed to download file: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean deleteFile(String keyName) {
+        try {
+            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(keyName)
+                    .build();
+
+            s3Client.deleteObject(deleteRequest);
+            return true;
+        } catch (S3Exception e) {
+            throw new RuntimeException("Failed to delete file: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean fileExists(String keyName) {
+        try {
+            headObject(keyName);
+            return true;
+        } catch (NoSuchKeyException e) {
+            return false;
+        }
+    }
+
+    public HeadObjectResponse getFileMetadata(String keyName) {
+        try {
+            return headObject(keyName);
+        } catch (NoSuchKeyException e) {
+            throw new RuntimeException("File not found: " + keyName, e);
+        }
+    }
+
+    public List<S3Object> listFiles() {
+        try {
+            ListObjectsV2Request request = ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .build();
+
+            ListObjectsV2Response response = s3Client.listObjectsV2(request);
+            return response.contents();
+        } catch (S3Exception e) {
+            throw new RuntimeException("Failed to list files: " + e.getMessage(), e);
+        }
+    }
+
+    private HeadObjectResponse headObject(String keyName) {
+        HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+                .build();
+
+        return s3Client.headObject(headObjectRequest);
+    }
+
+    private String generateUniqueKeyName(String originalFilename) {
+        String fileExtension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        return UUID.randomUUID().toString() + fileExtension;
+    }
+}
+```
+#### Detailed Explanation:
+- `@Service`: Marks this class as a Spring service
+- `@Autowired`: Injects the S3Client bean
+- `@Value`: Injects the bucket name from application properties
+- Key methods:
+  1. `uploadFile()`: Handles file uploads to S3 with original filename metadata
+  2. `generateDownloadUrl()`: Creates presigned URLs for secure downloads
+  3. `downloadFileContent()`: Downloads file content as byte array
+  4. `deleteFile()`: Removes files from S3
+  5. `fileExists()`: Checks if a file exists in S3
+  6. `getFileMetadata()`: Retrieves file metadata including original filename
+  7. `listFiles()`: Lists all files in the bucket
+  8. `findExistingFileByOriginalName()`: **NEW** - Checks for duplicate filenames
+  9. `replaceExistingFile()`: **NEW** - Replaces existing files while preserving metadata
+- Helper methods:
+  - `headObject()`: Retrieves file metadata
+  - `generateUniqueKeyName()`: Generates unique filenames while preserving original extensions
+- **Enhanced Features**:
+  - Original filename preservation in S3 metadata
+  - Conflict detection for duplicate file uploads
+  - Improved error handling and logging
+
+### 4.5 REST Controller (Controller.java) - Detailed Implementation
+
+#### List Files Endpoint
+```java
+@GetMapping
+public ResponseEntity<?> listFiles() {
+    try {
+        List<S3Object> files = s3Service.listFiles();
+        logger.info("Retrieved {} files from S3", files.size());
+        
+        List<Map<String, Object>> fileList = files.stream()
+            .map(file -> {
+                Map<String, Object> fileInfo = new HashMap<>();
+                String key = file.key();
+                logger.info("Processing file with key: {}", key);
+                
+                // Get file metadata to retrieve original filename
+                HeadObjectResponse metadata = s3Service.getFileMetadata(key);
+                String originalName = metadata.metadata().get("original-filename");
+                logger.info("Retrieved original name from metadata: {}", originalName);
+                
+                if (originalName == null) {
+                    // Fallback to extracting from key if metadata is not available
+                    int lastUnderscoreIndex = key.lastIndexOf("_");
+                    if (lastUnderscoreIndex > 0) {
+                        originalName = key.substring(0, lastUnderscoreIndex);
+                    } else {
+                        originalName = key;
+                    }
+                    logger.info("Using fallback original name: {}", originalName);
+                }
+                
+                fileInfo.put("key", key);
+                fileInfo.put("originalName", originalName);
+                fileInfo.put("size", file.size());
+                fileInfo.put("lastModified", file.lastModified());
+                fileInfo.put("downloadUrl", s3Service.generateDownloadUrl(key));
+                
+                logger.info("File info: {}", fileInfo);
+                return fileInfo;
+            })
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(fileList);
+    } catch (Exception e) {
+        logger.error("Failed to list files", e);
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Failed to list files: " + e.getMessage());
+        return ResponseEntity.internalServerError().body(error);
+    }
+}
+```
+
+#### Upload File Endpoint (Enhanced with Conflict Detection)
+```java
+@PostMapping("/files/upload")
+public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
+    if (file.isEmpty()) {
+        return ResponseEntity.badRequest().body(
+            Map.of("error", "Please select a file to upload")
+        );
+    }
+
+    String originalFilename = file.getOriginalFilename();
+
+    // Check if file with same original name already exists
+    String existingKey = s3Service.findExistingFileByOriginalName(originalFilename);
+
+    if (existingKey != null) {
+        // File already exists, return conflict response with options
+        logger.info("File conflict detected for: {} (existing key: {})", originalFilename, existingKey);
+        return ResponseEntity.status(409).body(Map.of(
+            "conflict", true,
+            "message", "A file with the same name already exists",
+            "originalFilename", originalFilename,
+            "existingKey", existingKey,
+            "options", Map.of(
+                "cancel", "Cancel the upload",
+                "replace", "Replace the existing file",
+                "keepBoth", "Keep both files (new file will have a unique name)"
+            )
+        ));
+    }
+
+    try {
+        String keyName = s3Service.uploadFile(file);
+        // Mark upload as completed
+        uploadStatus.put(keyName, true);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "File uploaded successfully",
+            "key", keyName,
+            "downloadUrl", s3Service.generateDownloadUrl(keyName)
+        ));
+    } catch (IOException e) {
+        return ResponseEntity.internalServerError().body(
+            Map.of("error", "Failed to upload file: " + e.getMessage())
+        );
+    }
+}
+```
+
+#### Download File Endpoint
+```java
+@GetMapping("/download/{key}")
+public ResponseEntity<?> downloadFile(@PathVariable String key) {
+    try {
+        byte[] fileContent = s3Service.downloadFileContent(key);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + key + "\"")
+                .body(fileContent);
+    } catch (Exception e) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Failed to download file: " + e.getMessage());
+        return ResponseEntity.internalServerError().body(error);
+    }
+}
+```
+
+#### Delete File Endpoint
+```java
+@DeleteMapping("/{key}")
+public ResponseEntity<?> deleteFile(@PathVariable String key) {
+    try {
+        boolean deleted = s3Service.deleteFile(key);
+        if (deleted) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "File deleted successfully");
+            return ResponseEntity.ok(response);
+        } else {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "File not found");
+            return ResponseEntity.notFound().build();
+        }
+    } catch (Exception e) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Failed to delete file: " + e.getMessage());
+        return ResponseEntity.internalServerError().body(error);
+    }
+}
+```
+
+#### Upload Status Endpoint
+```java
+@GetMapping("/status/{key}")
+public ResponseEntity<?> getUploadStatus(@PathVariable String key) {
+    Map<String, Object> response = new HashMap<>();
+    
+    if (uploadStatus.containsKey(key)) {
+        response.put("completed", true);
+        // Clean up the status after checking
+        uploadStatus.remove(key);
+    } else {
+        response.put("completed", false);
+    }
+    
+    return ResponseEntity.ok(response);
+}
+```
+
+##### Implementation Details:
+- All endpoints include comprehensive error handling
+- Logging is implemented for debugging and monitoring
+- File metadata is preserved and retrieved
+- Upload status tracking for better user experience
+- Proper HTTP status codes and response formats
+- Security considerations for file operations
+
+## 5. AWS S3 Integration
+
+### 5.1 AWS Configuration
+```java
+@Configuration
+public class AwsConfig {
+    @Bean
+    public S3Client s3Client() {
+        // AWS S3 client configuration
+    }
+}
+```
+- Creates and configures the AWS S3 client
+- Manages AWS credentials and region settings
+- Provides S3 operations throughout the application
+
+### 5.2 File Upload Service
+```java
+@Service
+public class FileService {
+    // File upload and download operations
+}
+```
+- Handles file operations with AWS S3
+- Manages file metadata in the database
+- Provides error handling and validation
+
+## 6. File Operations
+
+### 6.1 Upload Process
+1. User selects file through web interface
+2. File is validated for size and type
+3. File is uploaded to AWS S3
+4. Metadata is saved to database
+5. Success/error message is returned to user
+
+### 6.2 Download Process
+1. User requests file download
+2. System retrieves file URL from database
+3. File is downloaded from AWS S3
+4. File is served to user
+
+## 7. Security and Error Handling
+
+### 7.1 Error Handling
+- Global exception handling
+- Custom error messages
+- Logging of errors and exceptions
+
+### 7.2 Security Considerations
+- File size validation
+- File type validation
+- Secure AWS credential management
+- Input sanitization
+
+## 8. Frontend Implementation
+
+### 8.1 Modern UI Implementation
+The application features a modern, responsive user interface built with HTML5, CSS3, and vanilla JavaScript. The UI is designed with a dark theme and includes smooth animations and transitions.
+
+#### 8.1.1 Key UI Components
+
+1. **Header Section**
+   - Gradient text title with modern typography
+   - Subtitle with muted color scheme
+   - Responsive design for all screen sizes
+
+2. **Upload Section**
+   - Drag and drop file upload area
+   - Visual feedback for drag and drop operations
+   - Progress bar with animated gradient
+   - Support for multiple file uploads
+   - Modern file input styling
+
+3. **Files Grid**
+   - Responsive grid layout for file cards
+   - File cards with hover effects and animations
+   - File metadata display (size, last modified)
+   - Download and delete actions
+   - Empty state handling
+
+4. **Notification System**
+   - Toast-style notifications
+   - Success and error states
+   - Smooth animations
+   - Auto-dismiss functionality
+
+#### 8.1.2 CSS Features
+```css
+/* Modern Color Scheme */
+:root {
+    --primary: #64ffda;
+    --secondary: #1de9b6;
+    --background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+}
+
+/* Glass Morphism Effects */
+.glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Modern Animations */
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+```
+
+#### 8.1.3 JavaScript Features
+1. **File Upload Handling**
+   - Drag and drop support
+   - Multiple file upload
+   - Progress tracking
+   - Error handling
+
+2. **File Management**
+   - Real-time file listing with original filenames
+   - Download functionality with presigned URLs
+   - Delete confirmation dialogs
+   - File metadata display including size and modification date
+   - **NEW**: File search functionality
+   - **NEW**: Conflict resolution handling
+
+3. **UI Interactions**
+   - Smooth animations and transitions
+   - Loading states with progress indicators
+   - Error notifications with specific messages
+   - Success feedback with file details
+   - **NEW**: File size validation (500MB limit)
+   - **NEW**: Upload conflict resolution dialogs
+
+### 8.2 API Integration
+The frontend integrates with the backend through RESTful API endpoints:
+
+1. **File Operations**
+   ```javascript
+   // List files
+   GET /api/files
+
+   // Upload file (with conflict detection)
+   POST /api/files/upload
+
+   // Download file
+   GET /api/files/download/{key}
+
+   // Delete file
+   DELETE /api/files/{key}
+
+   // Check upload status
+   GET /api/files/status/{key}
+
+   // Search files (NEW)
+   GET /api/files/search?q={query}
+   ```
+
+2. **Error Handling**
+   - Client-side validation (file size, type checking)
+   - Server error handling with specific error codes
+   - User-friendly error messages with actionable information
+   - Retry mechanisms for network failures
+   - **NEW**: File conflict detection and resolution (HTTP 409)
+   - **NEW**: Upload timeout handling for large files
+   - **NEW**: Network error detection with user guidance
+
+### 8.3 Responsive Design
+The UI is fully responsive and adapts to different screen sizes:
+
+1. **Mobile Optimization**
+   - Single column layout for small screens
+   - Touch-friendly interface
+   - Optimized button sizes
+   - Readable typography
+
+2. **Tablet and Desktop**
+   - Multi-column grid layout
+   - Hover effects
+   - Advanced animations
+   - Enhanced user interactions
+
+## 9. Testing and Deployment
+
+### 9.1 Testing
+- Unit tests for services
+- Integration tests for controllers
+- AWS S3 integration tests
+
+### 9.2 Deployment
+1. Build the application:
+   ```bash
+   mvn clean package
+   ```
+2. Run the application:
+   ```bash
+   java -jar target/file-manager-0.0.1-SNAPSHOT.jar
+   ```
