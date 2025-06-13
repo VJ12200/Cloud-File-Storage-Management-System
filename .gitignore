@@ -1,0 +1,92 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### AWS Credentials and Environment Files ###
+# AWS credentials should never be committed
+.aws/
+*.pem
+*.p12
+*.jks
+*.keystore
+
+# Environment-specific configuration files
+application-local.properties
+application-dev.properties
+application-prod.properties
+application-*.yml
+application-*.yaml
+!application.properties
+!application.yml
+!application.yaml
+
+# Environment variables files
+.env
+.env.local
+.env.development
+.env.production
+
+### Logs ###
+logs/
+*.log
+*.log.*
+*.out
+
+### Temporary Files ###
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+### OS Generated Files ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+### Application Specific ###
+# Uploaded files directory (if you add local storage later)
+uploads/
+files/
+storage/
+
+# Generated documentation
+docs/generated/
