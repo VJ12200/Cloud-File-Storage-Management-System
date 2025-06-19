@@ -65,7 +65,7 @@ Before you begin, ensure you have the following installed:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/spring-boot-file-manager.git
+git clone https://github.com/VJ12200/Cloud-File-Storage-Management-System
 cd spring-boot-file-manager
 ```
 
