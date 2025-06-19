@@ -87,9 +87,6 @@ export AWS_ACCESS_KEY_ID=your_access_key_id
 export AWS_SECRET_ACCESS_KEY=your_secret_access_key
 ```
 
-#### Option C: IAM Roles (For EC2 instances)
-Attach an IAM role with S3 permissions to your EC2 instance.
-
 ### 3. Configure Application Properties
 
 Update `src/main/resources/application.properties`:
