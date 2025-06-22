@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
+
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -59,7 +60,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authz -> authz
                 // Public endpoints
-                .requestMatchers("/login", "/error", "/webjars/**", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/login", "/login/local", "/register", "/error", "/webjars/**", "/css/**", "/js/**", "/images/**").permitAll()
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
@@ -79,6 +80,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .maximumSessions(1)
                 .maxSessionsPreventsLogin(false)
+            )
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/login/local", "/register")
             );
 
         return http.build();

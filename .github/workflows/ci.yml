@@ -34,15 +34,30 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    - name: Set up test environment
+      run: |
+        echo "Setting up test environment..."
+        # Create .env file for tests with dummy values
+        echo "GOOGLE_CLIENT_ID=test-client-id" > .env
+        echo "GOOGLE_CLIENT_SECRET=test-client-secret" >> .env
+        echo "AWS_ACCESS_KEY_ID=test-access-key" >> .env
+        echo "AWS_SECRET_ACCESS_KEY=test-secret-key" >> .env
+        echo "AWS_REGION=us-east-1" >> .env
+        echo "S3_BUCKET_NAME=test-bucket" >> .env
+
     - name: Run tests
       run: |
         echo "Running tests..."
-        ./gradlew test
+        ./gradlew test --info
+      env:
+        SPRING_PROFILES_ACTIVE: test
 
     - name: Build project
       run: |
         echo "Building the project..."
-        ./gradlew build
+        ./gradlew build -x test
+      env:
+        SPRING_PROFILES_ACTIVE: test
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

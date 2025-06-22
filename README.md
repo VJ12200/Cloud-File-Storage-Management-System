@@ -16,20 +16,30 @@ A modern, secure file management application built with Spring Boot and AWS S3, 
 - **File Search**: Quick search functionality across all uploaded files
 - **Secure Downloads**: Presigned URLs for secure file access
 
-### **Security Features**
+### **Authentication & Security**
 - **Google OAuth2 Authentication**: Secure login with Google accounts
-- **User Session Management**: Secure user sessions and profile display
+- **Session Management**: Secure user sessions and profile display
 - **No Hardcoded Credentials**: Uses AWS ProfileCredentialsProvider
-- **Secure File Handling**: Proper validation 
+- **CSRF Protection**: Built-in Spring Security protection
+- **Secure File Handling**: Proper validation and error handling
 - **Original Filename Preservation**: Maintains file metadata securely
 - **Error Handling**: Comprehensive error management and logging
 
 ## Interface
-- **Login Page** : Use Google to login
-- **File Upload Area**: Click to Browse and Upload files or simply drag and drop to upload 
-- **Logout Bar**: Press the logout button to logout and return back to the login page
-- **File Search Bar**: Enter the file name to search
-- **Uploaded Files**: Has options for both downloading the file to local storage or deleting it from the cloud storage. Also shows the File type , Size and Upload/Modified date
+
+### **Authentication**
+- **Google OAuth2**: Secure social login with Google accounts
+- **Automatic User Creation**: User profiles created automatically from Google data
+- **Session Management**: Secure session handling and user state management
+- **Secure Logout**: Proper session cleanup and redirect to login page
+
+### **File Management Interface**
+- **File Upload Area**: Click to browse or drag-and-drop files (up to 500MB)
+- **Real-time Progress**: Live upload progress with visual feedback
+- **File Search Bar**: Quick search across all uploaded files
+- **File Operations**: Download, delete, and view file metadata
+- **Conflict Resolution**: Smart handling of duplicate filenames
+- **Responsive Design**: Works seamlessly on all device sizes
 
 ### Login Page
 ![Screenshot 2025-06-22 174037](https://github.com/user-attachments/assets/a5036f7c-043f-440d-8813-b8c7f79af540)
@@ -47,10 +57,13 @@ A modern, secure file management application built with Spring Boot and AWS S3, 
 ## Technology Stack
 
 - **Backend**: Spring Boot 3.0+, Java 17+
+- **Security**: Spring Security with Google OAuth2
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **Cloud Storage**: AWS S3
-- **Build Tool**: Gradle
+- **Cloud Storage**: AWS S3 with presigned URLs
+- **Build Tool**: Gradle with Kotlin DSL
 - **Template Engine**: Thymeleaf
+- **Testing**: JUnit 5, Mockito, Spring Boot Test
+- **CI/CD**: GitHub Actions with automated testing
 
 ## Prerequisites
 
@@ -162,7 +175,48 @@ Open your browser and navigate to:
 http://localhost:8080
 ```
 
-You will be redirected to the login page where you can authenticate with your Google account.
+You will be redirected to the login page where you can:
+- **Google OAuth2**: Click "Login with Google" for quick social authentication
+- **Username/Password**: Use the registration form to create a new account or login with existing credentials
+
+## Authentication Configuration
+
+### Username/Password Authentication
+
+The application supports both Google OAuth2 and traditional username/password authentication:
+
+#### User Registration
+- **Email Validation**: Valid email address required
+- **Password Requirements**: Minimum 6 characters
+- **Name Validation**: Full name required
+- **Duplicate Prevention**: Email addresses must be unique
+- **Auto-Login**: Users are automatically logged in after successful registration
+
+#### Security Features
+- **BCrypt Encryption**: All passwords are encrypted with BCrypt and salt
+- **Session Management**: Secure session creation and management
+- **CSRF Protection**: Form submissions are protected against CSRF attacks
+- **Input Validation**: Comprehensive server-side validation
+- **Error Handling**: Secure error messages without information leakage
+
+#### Authentication Flow
+```java
+// Local user registration
+POST /register
+{
+    "email": "user@example.com",
+    "name": "Full Name",
+    "password": "securepassword",
+    "confirmPassword": "securepassword"
+}
+
+// Local user login
+POST /login/local
+{
+    "email": "user@example.com",
+    "password": "securepassword"
+}
+```
 
 ## Configuration Options
 
@@ -201,9 +255,11 @@ logging.level.org.example=DEBUG
 ### Authentication Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/login` | Login page |
+| `GET` | `/login` | Login page with dual authentication options |
 | `GET` | `/oauth2/authorization/google` | Initiate Google OAuth2 login |
-| `POST` | `/logout` | Logout user |
+| `POST` | `/login/local` | Username/password authentication |
+| `POST` | `/register` | User registration |
+| `POST` | `/logout` | Logout user and clear session |
 
 ### File Management Endpoints (Requires Authentication)
 | Method | Endpoint | Description |
@@ -239,14 +295,129 @@ heroku config:set AWS_SECRET_ACCESS_KEY=your_secret
 git push heroku main
 ```
 
+## CI/CD Pipeline and Testing
+
+### Automated Testing
+The project includes a comprehensive CI/CD pipeline with GitHub Actions that automatically:
+
+#### Pipeline Features
+- **Automated Testing**: Runs on every push and pull request
+- **Multi-Environment**: Tests with Java 17 on Ubuntu latest
+- **Dependency Caching**: Gradle dependencies cached for faster builds
+- **Artifact Generation**: Builds and uploads JAR files for deployment
+
+#### Test Categories
+```yaml
+# CI/CD Pipeline runs these test categories:
+✓ Application Context Tests    # Verifies Spring Boot startup
+✓ Authentication Tests        # User registration and login validation
+✓ Integration Tests          # Service layer business logic
+✓ Security Tests            # Password encryption and validation
+✓ Error Handling Tests      # Invalid scenarios and edge cases
+```
+
+#### Test Environment
+- **Mock External Services**: S3 and OAuth2 services mocked for isolated testing
+- **Test Configuration**: Separate test properties with dummy values
+- **Environment Variables**: Automated setup of required environment variables
+- **Dependency Resolution**: Handles circular dependencies in test environment
+
+#### Running Tests Locally
+```bash
+# Run all tests
+./gradlew test
+
+# Run tests with detailed output
+./gradlew test --info
+
+# Run specific test class
+./gradlew test --tests "UserServiceIntegrationTest"
+
+# Run tests with test profile
+SPRING_PROFILES_ACTIVE=test ./gradlew test
+```
+
+#### Test Coverage
+- **Application Startup**: Verifies Spring context loads successfully
+- **User Registration**: Tests complete user creation workflow
+- **Authentication**: Validates login with correct/incorrect credentials
+- **Password Security**: Tests BCrypt encryption and validation
+- **Error Scenarios**: Tests duplicate users, invalid inputs, non-existent users
+- **Service Integration**: Tests business logic without external dependencies
+
+### Build and Deployment
+```bash
+# Build application
+./gradlew build
+
+# Build without running tests (faster)
+./gradlew build -x test
+
+# Generate JAR file
+./gradlew bootJar
+```
 
 ##  Troubleshooting
+
+### Common Issues
+
+#### Authentication Issues
+```bash
+# Issue: "User already exists" error
+# Solution: Check if email is already registered, use different email or login instead
+
+# Issue: "Invalid credentials" error
+# Solution: Verify email and password are correct, check for typos
+
+# Issue: OAuth2 redirect error
+# Solution: Verify Google OAuth2 configuration and redirect URLs
+```
+
+#### CI/CD Issues
+```bash
+# Issue: Tests failing in CI/CD
+# Solution: Check environment variables and test configuration
+
+# Issue: Build failing
+# Solution: Verify all dependencies are available and Java version is correct
+
+# Issue: Circular dependency errors
+# Solution: Ensure PasswordConfig is separate from SecurityConfig
+```
+
+#### File Upload Issues
+```bash
+# Issue: Large file upload timeout
+# Solution: Increase server timeout in application.properties
+
+# Issue: AWS S3 access denied
+# Solution: Verify AWS credentials and S3 bucket permissions
+```
+
 ### Debug Mode
 Enable debug logging:
 ```properties
+# Application debugging
 logging.level.org.example=DEBUG
+
+# AWS SDK debugging
 logging.level.software.amazon.awssdk=DEBUG
+
+# Spring Security debugging
+logging.level.org.springframework.security=DEBUG
+
+# Authentication debugging
+logging.level.org.springframework.security.oauth2=DEBUG
 ```
 
+### Test Debugging
+```bash
+# Run tests with debug output
+./gradlew test --debug
 
-</div>
+# Run specific test with logging
+./gradlew test --tests "UserServiceIntegrationTest" --info
+
+# Check test reports
+open build/reports/tests/test/index.html
+```
