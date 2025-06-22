@@ -28,9 +28,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 
-    // Password encoding for local authentication
-    implementation("org.springframework.security:spring-security-crypto")
-
     // Environment variables from .env file
     implementation("me.paulschwarz:spring-dotenv:4.0.0")
 

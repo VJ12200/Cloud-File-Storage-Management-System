@@ -3,7 +3,7 @@ package org.example.filemanager.model;
 import java.time.LocalDateTime;
 
 /**
- * User model to store authenticated user information from Google OAuth2 and local authentication
+ * User model to store authenticated user information from Google OAuth2
  */
 public class User {
     private String id;
@@ -11,7 +11,6 @@ public class User {
     private String name;
     private String picture;
     private String provider;
-    private String password; // For local authentication
     private LocalDateTime lastLogin;
 
     public User() {}
@@ -22,16 +21,6 @@ public class User {
         this.name = name;
         this.picture = picture;
         this.provider = provider;
-        this.lastLogin = LocalDateTime.now();
-    }
-
-    // Constructor for local authentication
-    public User(String email, String name, String password) {
-        this.id = java.util.UUID.randomUUID().toString();
-        this.email = email;
-        this.name = name;
-        this.password = password;
-        this.provider = "local";
         this.lastLogin = LocalDateTime.now();
     }
 
@@ -82,14 +71,6 @@ public class User {
 
     public void setLastLogin(LocalDateTime lastLogin) {
         this.lastLogin = lastLogin;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     @Override

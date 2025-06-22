@@ -359,7 +359,7 @@ class UserServiceIntegrationTest {
 
 #### C. Integration Tests
 - ✅ **Service Layer**: Tests business logic without external dependencies
-- ✅ **Security Configuration**: Validates password encoding integration
+- ✅ **Security Configuration**: Validates OAuth2 authentication integration
 - ✅ **Mock External Services**: S3Service mocked to avoid AWS calls during testing
 - ✅ **In-Memory Storage**: Tests user storage operations
 
@@ -381,9 +381,9 @@ public class TestConfig {
 }
 ```
 
-#### Circular Dependency Resolution
-- **Issue**: SecurityConfig depends on UserService, UserService depends on PasswordEncoder
-- **Solution**: Created separate `PasswordConfig` class for PasswordEncoder bean
+#### Test Environment Configuration
+- **Mock Services**: Complete mocking of external dependencies (S3, OAuth2)
+- **Test Properties**: Dedicated test configuration with dummy values
 - **Fallback**: Added `spring.main.allow-circular-references=true` for test environment
 
 ### 11.5 What Tests Actually Do
@@ -434,16 +434,14 @@ BUILD SUCCESSFUL - Ready for deployment
 #### Enhanced Test Coverage
 ```java
 // Example of improved controller testing
-@WebMvcTest(AuthController.class)
-class AuthControllerTest {
+@WebMvcTest(GUIController.class)
+class GUIControllerTest {
     @Test
-    void testLocalLogin() throws Exception {
-        mockMvc.perform(post("/login/local")
-                .param("email", "test@example.com")
-                .param("password", "password123")
-                .with(csrf()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/"));
+    void testMainPageAccess() throws Exception {
+        mockMvc.perform(get("/")
+                .with(oauth2Login()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("index"));
     }
 }
 ```
@@ -453,8 +451,8 @@ class AuthControllerTest {
 ### 12.1 CI/CD Pipeline and Testing Infrastructure (Latest Update)
 
 #### Comprehensive Test Suite
-- **Added**: Integration tests for authentication system
-- **Coverage**: User registration, authentication, error handling, and validation
+- **Added**: Integration tests for OAuth2 authentication system
+- **Coverage**: OAuth2 user processing, user management, error handling, and validation
 - **Environment**: Complete test environment with mocked external services
 - **Configuration**: Separate test properties and mock configurations
 
@@ -477,7 +475,7 @@ class AuthControllerTest {
 #### Test Infrastructure
 - **Mock Services**: Complete S3Service mocking for isolated testing
 - **Test Profiles**: Dedicated test configuration with mock values
-- **Dependency Resolution**: Fixed circular dependency issues in test environment
+- **Environment Setup**: Automated test environment configuration
 - **Error Handling**: Comprehensive test coverage for failure scenarios
 
 #### Test Categories Implemented
