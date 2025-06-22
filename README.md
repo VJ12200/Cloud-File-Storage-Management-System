@@ -247,6 +247,6 @@ Enable debug logging:
 logging.level.org.example=DEBUG
 logging.level.software.amazon.awssdk=DEBUG
 ```
-
+Document.txt includes and explanation of most of the features along with issues I faced in development and their solutions.
 
 </div>
