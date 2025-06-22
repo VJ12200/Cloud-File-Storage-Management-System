@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,6 +30,63 @@
             text-align: center;
             margin-bottom: 3rem;
             position: relative;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.8rem 1.2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #64ffda;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .user-name {
+            color: #e2e8f0;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-email {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
         }
 
         .title {
@@ -488,8 +545,23 @@
 <body>
     <div class="container">
         <div class="header">
+            <!-- User Info (shown when authenticated) -->
+            <div class="user-info" th:if="${user}">
+                <img th:src="${user.picture}" th:alt="${user.name}" class="user-avatar" />
+                <div class="user-details">
+                    <div class="user-name" th:text="${user.name}">User Name</div>
+                    <div class="user-email" th:text="${user.email}">user@example.com</div>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="logout-btn" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">
+                        Logout
+                    </button>
+                </form>
+            </div>
+
             <h1 class="title">File Manager</h1>
-            <p class="subtitle">Basic File Manager to organize files</p>
+            <p class="subtitle">Secure cloud file storage and management</p>
         </div>
 
         <div class="upload-section">
@@ -1040,7 +1112,7 @@
                                 cursor: pointer;
                                 transition: all 0.3s ease;
                                 font-size: 0.9rem;
-                            ">❌ Cancel Upload</button>
+                            "> Cancel Upload</button>
 
                             <button id="replaceBtn" style="
                                 background: rgba(251, 191, 36, 0.1);
@@ -1051,7 +1123,7 @@
                                 cursor: pointer;
                                 transition: all 0.3s ease;
                                 font-size: 0.9rem;
-                            ">🔄 Replace Existing File</button>
+                            "> Replace Existing File</button>
 
                             <button id="keepBothBtn" style="
                                 background: rgba(100, 255, 218, 0.1);
@@ -1062,7 +1134,7 @@
                                 cursor: pointer;
                                 transition: all 0.3s ease;
                                 font-size: 0.9rem;
-                            ">📁 Keep Both Files</button>
+                            "> Keep Both Files</button>
                         </div>
                     </div>
                 `;

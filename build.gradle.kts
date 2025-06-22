@@ -23,6 +23,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
+    // Spring Security and OAuth2
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+
+    // Environment variables from .env file
+    implementation("me.paulschwarz:spring-dotenv:4.0.0")
+
     // AWS SDK and Spring Cloud AWS
     implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.3.1"))
     implementation("io.awspring.cloud:spring-cloud-aws-starter")
@@ -31,6 +39,7 @@ dependencies {
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

@@ -24,10 +24,12 @@ A modern, secure file management application built with Spring Boot and AWS S3, 
 - **Toast Notifications**: Real-time feedback for all operations
 
 ### **Security Features**
-- **No Hardcoded Credentials**: Uses AWS ProfileCredentialsProvider
-- **Secure File Handling**: Proper validation and sanitization
-- **Original Filename Preservation**: Maintains file metadata securely
-- **Error Handling**: Comprehensive error management and logging
+- **🔐 Google OAuth2 Authentication**: Secure login with Google accounts
+- **👤 User Session Management**: Secure user sessions and profile display
+- **🔒 No Hardcoded Credentials**: Uses AWS ProfileCredentialsProvider
+- **🛡️ Secure File Handling**: Proper validation and sanitization
+- **📝 Original Filename Preservation**: Maintains file metadata securely
+- **⚠️ Error Handling**: Comprehensive error management and logging
 
 ## Interface
 - **File Upload Area**: Click to Browse and Upload files or simply drag and drop to upload 
@@ -65,11 +67,33 @@ Before you begin, ensure you have the following installed:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/VJ12200/Cloud-File-Storage-Management-System
+git clone https://github.com/yourusername/spring-boot-file-manager.git
 cd spring-boot-file-manager
 ```
 
-### 2. Set Up AWS Credentials
+### 2. Set Up Google OAuth2 Authentication
+
+#### Create Google Cloud Project and OAuth2 Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Enable Google+ API
+4. Configure OAuth consent screen
+5. Create OAuth2 credentials (Web application)
+6. Add authorized redirect URI: `http://localhost:8080/login/oauth2/code/google`
+
+**📋 For detailed setup instructions, see [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md)**
+
+#### Configure OAuth2 in Application
+
+Update `src/main/resources/application.properties`:
+```properties
+# Replace with your actual Google OAuth2 credentials
+spring.security.oauth2.client.registration.google.client-id=YOUR_GOOGLE_CLIENT_ID
+spring.security.oauth2.client.registration.google.client-secret=YOUR_GOOGLE_CLIENT_SECRET
+```
+
+### 3. Set Up AWS Credentials
 
 Choose one of the following methods:
 
@@ -87,7 +111,10 @@ export AWS_ACCESS_KEY_ID=your_access_key_id
 export AWS_SECRET_ACCESS_KEY=your_secret_access_key
 ```
 
-### 3. Configure Application Properties
+#### Option C: IAM Roles (For EC2 instances)
+Attach an IAM role with S3 permissions to your EC2 instance.
+
+### 4. Configure Application Properties
 
 Update `src/main/resources/application.properties`:
 ```properties
@@ -100,14 +127,14 @@ spring.servlet.multipart.max-file-size=500MB
 spring.servlet.multipart.max-request-size=1GB
 ```
 
-### 4. Create S3 Bucket
+### 5. Create S3 Bucket
 
 Create an S3 bucket in your AWS account:
 ```bash
 aws s3 mb s3://your-bucket-name --region your-region
 ```
 
-### 5. Run the Application
+### 6. Run the Application
 
 #### Using Gradle Wrapper (Recommended)
 ```bash
@@ -129,12 +156,14 @@ gradle bootRun
 java -jar build/libs/file-manager-*.jar
 ```
 
-### 6. Access the Application
+### 7. Access the Application
 
 Open your browser and navigate to:
 ```
 http://localhost:8080
 ```
+
+You will be redirected to the login page where you can authenticate with your Google account.
 
 ## Configuration Options
 
@@ -170,6 +199,14 @@ logging.level.org.example=DEBUG
 
 ##  API Endpoints
 
+### Authentication Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/login` | Login page |
+| `GET` | `/oauth2/authorization/google` | Initiate Google OAuth2 login |
+| `POST` | `/logout` | Logout user |
+
+### File Management Endpoints (Requires Authentication)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/` | Main file manager interface |
@@ -206,11 +243,13 @@ git push heroku main
 ## Security Practices
 
 ### **Implemented Security Measures**
-- No hardcoded AWS credentials
-- Secure credential provider chain
-- Input validation and sanitization
-- Presigned URLs for secure downloads
-- Comprehensive error handling
+- **🔐 OAuth2 Authentication**: Google OAuth2 integration with Spring Security
+- **🔒 Session Management**: Secure user sessions with automatic logout
+- **🛡️ No Hardcoded Credentials**: Uses AWS ProfileCredentialsProvider and environment variables
+- **🔗 Secure URLs**: Presigned URLs for secure file downloads
+- **✅ Input Validation**: Comprehensive validation and sanitization
+- **📊 Error Handling**: Detailed error management and logging
+- **🚫 CSRF Protection**: Built-in Spring Security CSRF protection
 
 ##  Troubleshooting
 ### Debug Mode
