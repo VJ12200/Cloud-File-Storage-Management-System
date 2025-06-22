@@ -16,28 +16,26 @@ A modern, secure file management application built with Spring Boot and AWS S3, 
 - **File Search**: Quick search functionality across all uploaded files
 - **Secure Downloads**: Presigned URLs for secure file access
 
-###  **Modern User Interface**
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
-- **Dark Theme**: Modern dark UI with gradient effects and animations
-- **Drag & Drop**: Intuitive file upload with drag-and-drop support
-- **Glass Morphism**: Beautiful glass effects and smooth transitions
-- **Toast Notifications**: Real-time feedback for all operations
-
 ### **Security Features**
-- **🔐 Google OAuth2 Authentication**: Secure login with Google accounts
-- **👤 User Session Management**: Secure user sessions and profile display
-- **🔒 No Hardcoded Credentials**: Uses AWS ProfileCredentialsProvider
-- **🛡️ Secure File Handling**: Proper validation and sanitization
-- **📝 Original Filename Preservation**: Maintains file metadata securely
-- **⚠️ Error Handling**: Comprehensive error management and logging
+- **Google OAuth2 Authentication**: Secure login with Google accounts
+- **User Session Management**: Secure user sessions and profile display
+- **No Hardcoded Credentials**: Uses AWS ProfileCredentialsProvider
+- **Secure File Handling**: Proper validation 
+- **Original Filename Preservation**: Maintains file metadata securely
+- **Error Handling**: Comprehensive error management and logging
 
 ## Interface
+- **Login Page** : Use Google to login
 - **File Upload Area**: Click to Browse and Upload files or simply drag and drop to upload 
+- **Logout Bar**: Press the logout button to logout and return back to the login page
 - **File Search Bar**: Enter the file name to search
 - **Uploaded Files**: Has options for both downloading the file to local storage or deleting it from the cloud storage. Also shows the File type , Size and Upload/Modified date
 
+### Login Page
+![Screenshot 2025-06-22 174037](https://github.com/user-attachments/assets/a5036f7c-043f-440d-8813-b8c7f79af540)
+
 ### Main Interface
-![File Manager Interface](https://i.ibb.co/wZvccqc2/Main-Interface.png)
+![File Manager Interface](https://github.com/user-attachments/assets/27961c19-6082-48d8-b195-73584f2555b5)
 
 ### Single/Multipart File Upload with Progress
 ![Single](https://i.ibb.co/bjDkRhzv/Single-Upload.png)
@@ -66,8 +64,9 @@ Before you begin, ensure you have the following installed:
 ## Quick Start
 
 ### 1. Clone the Repository
+
 ```bash
-git clone https://github.com/yourusername/spring-boot-file-manager.git
+git clone https://github.com/VJ12200/Cloud-File-Storage-Management-System
 cd spring-boot-file-manager
 ```
 
@@ -82,7 +81,7 @@ cd spring-boot-file-manager
 5. Create OAuth2 credentials (Web application)
 6. Add authorized redirect URI: `http://localhost:8080/login/oauth2/code/google`
 
-**📋 For detailed setup instructions, see [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md)**
+**For detailed setup instructions, see [GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md)**
 
 #### Configure OAuth2 in Application
 
@@ -240,16 +239,6 @@ heroku config:set AWS_SECRET_ACCESS_KEY=your_secret
 git push heroku main
 ```
 
-## Security Practices
-
-### **Implemented Security Measures**
-- **🔐 OAuth2 Authentication**: Google OAuth2 integration with Spring Security
-- **🔒 Session Management**: Secure user sessions with automatic logout
-- **🛡️ No Hardcoded Credentials**: Uses AWS ProfileCredentialsProvider and environment variables
-- **🔗 Secure URLs**: Presigned URLs for secure file downloads
-- **✅ Input Validation**: Comprehensive validation and sanitization
-- **📊 Error Handling**: Detailed error management and logging
-- **🚫 CSRF Protection**: Built-in Spring Security CSRF protection
 
 ##  Troubleshooting
 ### Debug Mode
