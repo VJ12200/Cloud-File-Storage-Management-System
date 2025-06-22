@@ -19,7 +19,7 @@ A modern, secure file management application built with Spring Boot and AWS S3, 
 - [Configuration Options](#configuration-options)
 - [API Endpoints](#api-endpoints)
 - [CI/CD Pipeline](#cicd-pipeline)
-- [Documentationupport](#documentation)
+- [Documentation](#documentation)
 
 ## Features
 
