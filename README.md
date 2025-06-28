@@ -250,8 +250,7 @@ The project uses GitHub Actions for continuous integration and deployment. The w
 
 #### Workflow Configuration
 
-<augment_code_snippet path=".github/workflows/ci.yml" mode="EXCERPT">
-````yaml
+
 name: CI/CD Pipeline
 
 on:
@@ -269,7 +268,7 @@ jobs:
       uses: actions/checkout@v4
     # ... additional steps
 ````
-</augment_code_snippet>
+
 
 ### Docker Containerization
 
