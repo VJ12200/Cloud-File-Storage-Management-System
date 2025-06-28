@@ -248,27 +248,6 @@ The project uses GitHub Actions for continuous integration and deployment. The w
 6. **Build**: Compiles and packages the application with `./gradlew build`
 7. **Artifact Upload**: Stores build artifacts for deployment
 
-#### Workflow Configuration
-
-
-name: CI/CD Pipeline
-
-on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    # ... additional steps
-````
-
 
 ### Docker Containerization
 
