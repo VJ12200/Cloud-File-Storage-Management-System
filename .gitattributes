@@ -2,3 +2,4 @@
 *.bat text eol=crlf
 *.jar binary
 src/main/resources/templates/login.html linguist-language=Java
+src/main/resources/templates/file-manager.html linguist-language=Java
