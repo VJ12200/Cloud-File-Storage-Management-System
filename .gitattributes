@@ -1,6 +1,4 @@
 /gradlew text eol=lf
 *.bat text eol=crlf
 *.jar binary
-src/main/webapp/index.html linguist-language=Java
-src/main/webapp/login.html linguist-language=Java
-src/main/webapp/filemanager.html linguist-language=Java
+src/main/resources/templates/login.html linguist-language=Java
