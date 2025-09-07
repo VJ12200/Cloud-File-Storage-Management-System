@@ -3,3 +3,4 @@
 *.jar binary
 src/main/webapp/index.html linguist-language=Java
 src/main/webapp/login.html linguist-language=Java
+src/main/webapp/filemanager.html linguist-language=Java
